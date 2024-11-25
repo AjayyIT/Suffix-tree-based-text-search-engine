@@ -1,0 +1,67 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Node children array size
+#define CHILDREN_SIZE 256
+
+// Node children array
+int children[CHILDREN_SIZE][CHILDREN_SIZE];
+int indices[CHILDREN_SIZE];
+int nodeCount = 1; // Initialize with 1 to use node 0 as root
+
+// Function to initialize arrays
+void initializeArrays() {
+    for (int i = 0; i < CHILDREN_SIZE; i++) {
+        for (int j = 0; j < CHILDREN_SIZE; j++) {
+            children[i][j] = -1;
+        }
+        indices[i] = -1;
+    }
+}
+
+// Function to insert a suffix into the suffix tree
+void insertSuffix(const char* suffix, int index) {
+    int node = 0; // Start from the root node
+    for (int i = 0; i < strlen(suffix); i++) {
+        if (children[node][(unsigned char)suffix[i]] == -1) {
+            children[node][(unsigned char)suffix[i]] = nodeCount++;
+        }
+        node = children[node][(unsigned char)suffix[i]];
+    }
+    indices[node] = index;
+}
+void search(const char* query) {
+    int node = 0; // Start from the root node
+    for (int i = 0; i < strlen(query); i++) {
+        if (children[node][(unsigned char)query[i]] == -1) {
+            printf("No occurrences of '%s' found.\n", query);
+            return;
+        }
+        node = children[node][(unsigned char)query[i]];
+    }
+    if (indices[node] != -1) {
+        printf("Occurrence found at index %d.\n", indices[node]);
+    } else {
+        printf("No occurrences of '%s' found.\n", query);
+    }
+}
+
+int main() {
+    char text[1000];
+    printf("Enter the text: ");
+    fgets(text, sizeof(text), stdin);
+    text[strcspn(text, "\n")] = 0;  // Remove newline character
+
+    initializeArrays();
+    for (int i = 0; i < strlen(text); i++) {
+        insertSuffix(text + i, i);
+    }
+
+    char query[100];
+    printf("Enter the query: ");
+    scanf("%s", query);
+    search(query);
+
+    return 0;
+}
