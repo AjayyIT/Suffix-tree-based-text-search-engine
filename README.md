@@ -1,6 +1,6 @@
 Suffix Tree Based Text Search Engine
 
-📌 Overview
+📌 Overview:
 This project implements a simple Suffix Tree / Trie-based Text Search Engine in the C programming language.
 It allows efficient substring searching by inserting all suffixes of a text into a Trie structure.
 
@@ -38,14 +38,14 @@ Enter the query: ana
 Output:
 Occurrence of 'ana' found starting at text index 1.
 
-🧠 Concepts Used
+🧠 Concepts Used:
 • Trie Data Structure
 • Suffix Insertion
 • String Matching
 • Recursive Memory Deallocation
 • ASCII Character Mapping
 
-📈 Future Improvements
+📈 Future Improvements:
 • Full suffix tree implementation
 • Multiple occurrence detection
 • Case-insensitive searching
@@ -53,8 +53,8 @@ Occurrence of 'ana' found starting at text index 1.
 • GUI integration
 • Performance optimization
 
-👨‍💻 Author
+👨‍💻 Author:
 Ajay RS
 
-📜 License
+📜 License:
 This project is licensed under the MIT License.
