@@ -2,66 +2,94 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Node children array size
-#define CHILDREN_SIZE 256
+#define ALPHABET_SIZE 256
 
-// Node children array
-int children[CHILDREN_SIZE][CHILDREN_SIZE];
-int indices[CHILDREN_SIZE];
-int nodeCount = 1; // Initialize with 1 to use node 0 as root
+// Define a Trie node structure
+typedef struct TrieNode {
+    struct TrieNode* children[ALPHABET_SIZE];
+    int index; // Stores the starting index of the substring
+} TrieNode;
 
-// Function to initialize arrays
-void initializeArrays() {
-    for (int i = 0; i < CHILDREN_SIZE; i++) {
-        for (int j = 0; j < CHILDREN_SIZE; j++) {
-            children[i][j] = -1;
+// Function to create and initialize a new node
+TrieNode* createNode() {
+    TrieNode* newNode = (TrieNode*)malloc(sizeof(TrieNode));
+    for (int i = 0; i < ALPHABET_SIZE; i++) {
+        newNode->children[i] = NULL;
+    }
+    newNode->index = -1;
+    return newNode;
+}
+
+// Function to insert a suffix into the trie
+void insertSuffix(TrieNode* root, const char* suffix, int originalIndex) {
+    TrieNode* curr = root;
+    int len = strlen(suffix); // Calculate length once
+    
+    for (int i = 0; i < len; i++) {
+        unsigned char c = (unsigned char)suffix[i];
+        if (curr->children[c] == NULL) {
+            curr->children[c] = createNode();
         }
-        indices[i] = -1;
+        curr = curr->children[c];
+        
+        // Store the index as we pass through to allow substring matching
+        if (curr->index == -1) {
+            curr->index = originalIndex;
+        }
     }
 }
 
-// Function to insert a suffix into the suffix tree
-void insertSuffix(const char* suffix, int index) {
-    int node = 0; // Start from the root node
-    for (int i = 0; i < strlen(suffix); i++) {
-        if (children[node][(unsigned char)suffix[i]] == -1) {
-            children[node][(unsigned char)suffix[i]] = nodeCount++;
-        }
-        node = children[node][(unsigned char)suffix[i]];
-    }
-    indices[node] = index;
-}
-void search(const char* query) {
-    int node = 0; // Start from the root node
-    for (int i = 0; i < strlen(query); i++) {
-        if (children[node][(unsigned char)query[i]] == -1) {
+// Function to search for a substring in the text
+void search(TrieNode* root, const char* query) {
+    TrieNode* curr = root;
+    int len = strlen(query);
+    
+    for (int i = 0; i < len; i++) {
+        unsigned char c = (unsigned char)query[i];
+        if (curr->children[c] == NULL) {
             printf("No occurrences of '%s' found.\n", query);
             return;
         }
-        node = children[node][(unsigned char)query[i]];
+        curr = curr->children[c];
     }
-    if (indices[node] != -1) {
-        printf("Occurrence found at index %d.\n", indices[node]);
-    } else {
-        printf("No occurrences of '%s' found.\n", query);
+    
+    // Because we store the index at every step, we can find substrings anywhere
+    printf("Occurrence of '%s' found starting at text index %d.\n", query, curr->index);
+}
+
+// Optional: Function to free the memory to prevent memory leaks
+void freeTrie(TrieNode* root) {
+    if (root == NULL) return;
+    for (int i = 0; i < ALPHABET_SIZE; i++) {
+        if (root->children[i] != NULL) {
+            freeTrie(root->children[i]);
+        }
     }
+    free(root);
 }
 
 int main() {
     char text[1000];
     printf("Enter the text: ");
-    fgets(text, sizeof(text), stdin);
-    text[strcspn(text, "\n")] = 0;  // Remove newline character
+    if (fgets(text, sizeof(text), stdin) == NULL) return 1;
+    
+    // Remove newline character safely
+    text[strcspn(text, "\n")] = '\0';  
 
-    initializeArrays();
-    for (int i = 0; i < strlen(text); i++) {
-        insertSuffix(text + i, i);
+    TrieNode* root = createNode();
+    int textLen = strlen(text);
+    
+    // Insert all suffixes
+    for (int i = 0; i < textLen; i++) {
+        insertSuffix(root, text + i, i);
     }
 
     char query[100];
     printf("Enter the query: ");
-    scanf("%s", query);
-    search(query);
+    if (scanf("%99s", query) == 1) { // Prevent query buffer overflow
+        search(root, query);
+    }
 
+    freeTrie(root);
     return 0;
 }
